@@ -667,3 +667,19 @@
 
 1577905508 c:\dev\codeblocks\allegro4\main.h
 
+1578508133 source:c:\dev\codeblock\cohete\main.cpp
+	<iostream>
+	<allegro.h>
+	<math.h>
+	"main.h"
+
+1578508133 c:\dev\codeblock\cohete\main.h
+
+1578508133 source:c:\dev\codeblocks\cohete\main.cpp
+	<iostream>
+	<allegro.h>
+	<math.h>
+	"main.h"
+
+1578508133 c:\dev\codeblocks\cohete\main.h
+
