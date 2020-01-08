@@ -25,8 +25,6 @@ int main()
 
     while(!key[KEY_ESC]){
         clear_to_color(buffer, 0x000000);
-        pintar_nave(cx, cy, buffer);
-        blit(buffer, screen, 0, 0, 0, 0, width, height);
         mover_nave(cx, cy, vx, vy);
 
         if(key[KEY_UP]){
@@ -43,6 +41,9 @@ int main()
         }
 
         cout << "x: " << cx << ", y: " << cy << endl;
+        pintar_nave(cx, cy, buffer);
+        blit(buffer, screen, 0, 0, 0, 0, width, height);
+
         rest(10);
     }
 
@@ -60,17 +61,21 @@ void pintar_nave(float cx, float cy, BITMAP *buffer){
 }
 
 void pintar_motor(float da, float cx, float cy, BITMAP *buffer){
-    const float fuego[] = {-5, 5, -10, 20, -5, 20, 0, 35, 5, 20, 10, 20, 5, 5};
-/*
-cx -5, cy+5
-cx-10, cy+20
-cx-5, cy+20
-cx, cy+35
-cx+5, cy+20
-cx+10, cy+20
-cx+5, cy+5
+    float fuego[14] = {-1, 1, -2, 4, -1, 4, 0, 7, 1, 4, 2, 4, 1, 1};
 
-*/
+    if(da != 0) cy -= 5;
+    if(da > 0) cx += 10;
+    if(da < 0) cx -= 10;
+
+    for(int i = 0; i < 13; i += 2){
+        fuego[i] = cx + fuego[i] * BLOCK_SIZE;
+        fuego[i + 1] = cy + fuego[i + 1] * BLOCK_SIZE;
+        rotar(fuego[i], fuego[i + 1], cx, cy, da);
+    }
+
+    for(int i = 0; i < 12; i+=2){
+        line(buffer, fuego[i], fuego[i+1], fuego[i+2], fuego[i+3], FIRE_COLOR);
+    }
 }
 
 void mover_nave(float &cx, float &cy, float &vx, float &vy){

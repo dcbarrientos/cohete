@@ -12,6 +12,7 @@
 #define BLOCK_SIZE 5    //Number of pixels per block
 
 #define SHIP_COLOR 0xeaeae6
+#define FIRE_COLOR 0Xff0000
 
 
 void pintar_nave(float cx, float cy, BITMAP *buffer);
