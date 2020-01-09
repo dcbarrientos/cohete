@@ -20,6 +20,13 @@
 *.mod
 *.smod
 
+#CodeBlocs
+*.cbp
+*.depend
+*.layout
+.git/
+obj/
+
 # Compiled Static libraries
 *.lai
 *.la
