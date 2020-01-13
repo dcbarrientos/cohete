@@ -16,6 +16,7 @@ int main()
     set_gfx_mode(GFX_AUTODETECT_WINDOWED, width, height, 0, 0);
     BITMAP *buffer = create_bitmap(width, height);
 
+    float fuel = FUEL_MAX;
     float cx, cy;
     float vx, vy;
     vx = vy = 0;
@@ -23,28 +24,38 @@ int main()
     cx = 100;
     cy = 100;
 
+    bool is_burning;
     while(!key[KEY_ESC]){
+        is_burning = false;
         clear_to_color(buffer, 0x000000);
         mover_nave(cx, cy, vx, vy);
 
-        if(key[KEY_UP]){
-            aceleracion(0, vx, vy); //angulo 0 es aceleracion ghacia arriba
-            pintar_motor(0, cx, cy, buffer);
+        if(fuel > 0){
+            if(key[KEY_UP]){
+                aceleracion(0, vx, vy); //angulo 0 es aceleracion ghacia arriba
+                pintar_motor(0, cx, cy, buffer);
+                is_burning = true;
+            }
+            if(key[KEY_RIGHT]){
+                aceleracion(-90, vx, vy); //rota a la derecha
+                pintar_motor(-90, cx, cy, buffer);
+                is_burning = true;
+            }
+            if(key[KEY_LEFT]){
+                aceleracion(90, vx, vy); //rota a la derecha
+                pintar_motor(90, cx, cy, buffer);
+                is_burning = true;
+            }
         }
-        if(key[KEY_RIGHT]){
-            aceleracion(-90, vx, vy); //rota a la derecha
-            pintar_motor(-90, cx, cy, buffer);
-        }
-        if(key[KEY_LEFT]){
-            aceleracion(90, vx, vy); //rota a la derecha
-            pintar_motor(90, cx, cy, buffer);
-        }
+        pintar_medidor_combustible(is_burning, fuel, buffer);
 
-        cout << "x: " << cx << ", y: " << cy << endl;
+        if(DEBUG)
+            cout << "x: " << cx << ", y: " << cy <<  " fuel: " << fuel << endl;
+
         pintar_nave(cx, cy, buffer);
         blit(buffer, screen, 0, 0, 0, 0, width, height);
 
-        rest(10);
+        rest(20);
     }
 
     return 0;
@@ -74,8 +85,22 @@ void pintar_motor(float da, float cx, float cy, BITMAP *buffer){
     }
 
     for(int i = 0; i < 12; i+=2){
-        line(buffer, fuego[i], fuego[i+1], fuego[i+2], fuego[i+3], FIRE_COLOR);
+        line(buffer, fuego[i], fuego[i+1], fuego[i+2], fuego[i+3], SHIP_COLOR);
     }
+}
+
+void pintar_medidor_combustible(bool is_burning, float &fuel, BITMAP *buffer){
+    textout_centre_ex(buffer, font, "Combustible " , 100, 30, 0x999999, 0x000000);
+    float medidor_size = 100;
+    float danger_zone = 15;
+
+    if(fuel > 0){
+        if(fuel > (FUEL_MAX / danger_zone))
+            rectfill(buffer, 50, 50, 50 + (fuel * medidor_size / FUEL_MAX), 55, NORMAL_FUEL_COLOR);
+        else
+            rectfill(buffer, 50, 50, 50 + (fuel * medidor_size / FUEL_MAX), 55, DANGER_FUEL_COLOR);
+    }
+    if(is_burning) fuel -= .2;
 }
 
 void mover_nave(float &cx, float &cy, float &vx, float &vy){
