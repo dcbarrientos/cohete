@@ -20,6 +20,13 @@
 *.mod
 *.smod
 
+#CodeBlocs
+*.cbp
+*.depend
+*.layout
+.git/
+obj/
+
 # Compiled Static libraries
 *.lai
 *.la
@@ -31,11 +38,3 @@
 *.out
 *.app
 
-# CodeBlocks files
-*.cbp
-*.depend
-*.layout
-
-/obj/*
-/bin/*
-/.git/*
