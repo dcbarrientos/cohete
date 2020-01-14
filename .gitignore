@@ -21,7 +21,7 @@
 *.smod
 
 #CodeBlocs
-*.cbp
+#*.cbp
 *.depend
 *.layout
 .git/
