@@ -24,10 +24,12 @@ int main()
     cx = 100;
     cy = 100;
 
+    float num_nivel = 2;
     bool is_burning;
     while(!key[KEY_ESC]){
         is_burning = false;
         clear_to_color(buffer, 0x000000);
+        pintar_nivel(num_nivel, buffer);
         mover_nave(cx, cy, vx, vy);
 
         if(fuel > 0){
@@ -47,6 +49,10 @@ int main()
                 is_burning = true;
             }
         }
+
+        if(cy > height)
+            explotar(cx, cy, buffer, num_nivel);
+
         pintar_medidor_combustible(is_burning, fuel, buffer);
 
         if(DEBUG)
@@ -103,6 +109,18 @@ void pintar_medidor_combustible(bool is_burning, float &fuel, BITMAP *buffer){
     if(is_burning) fuel -= .2;
 }
 
+void pintar_nivel(int num_nivel, BITMAP *buffer){
+    if(num_nivel == 1){
+        rectfill(buffer, 10, 450, 100, 500, 0x999999);
+    }
+    if(num_nivel == 2){
+        triangle(buffer, 400, 500, 300, 500, 300, 200, 0x999999);
+        triangle(buffer, 300, 0, 500, 0, 500, 400, 0x999999);
+        triangle(buffer, 620, 500, 700, 500, 620, 230, 0x999999);
+        rectfill(buffer, 10, 450, 100, 500, 0x999999);
+    }
+}
+
 void mover_nave(float &cx, float &cy, float &vx, float &vy){
     if(vx <= X_MAX_SPEED)
         vx += X_SPEED;
@@ -142,6 +160,22 @@ void aceleracion(float da, float &vx, float &vy){
     rotar(ax, ay, 0, 0, da);
     vx += ax;
     vy += ay;
+}
+
+void explotar(float cx, float cy, BITMAP *buffer, int num_nivel){
+    float x[12] = {cx - 10, cx + 10, cx, cx, cx + 15, cx - 15, cx + 5, cx - 10, cx + 10, cx - 5, cx - 10, cx + 10};
+    float y[12] = {cy, cy, cy - 15, cy + 15, cy - 15, cy + 15, cy + 5, cy - 10, cy - 10, cy + 10, cy, cy};
+
+    clear(screen);
+    do{
+        clear(buffer);
+        pintar_nivel(num_nivel, buffer);
+        for(int i = 0; i <= 10; i+=2){
+            line(buffer, x[i], y[i], x[i+1], y[i + 1], 0xffffff);
+            rotar(x[i + 1], y[i + 1], x[i], y[i], 5);
+        }
+        blit(buffer, screen, 0, 0, 0, 0, WIDTH * BLOCK_SIZE, HEIGHT * BLOCK_SIZE);
+    }while(!key[KEY_ESC]);
 }
 
 

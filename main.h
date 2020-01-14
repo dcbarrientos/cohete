@@ -26,4 +26,6 @@ void pintar_medidor_combustible(bool is_burning, float &fuel, BITMAP *buffer);
 void mover_nave(float &cx, float &cy, float &vx, float &vy);
 void rotar(float &x, float &y, float cx, float cy, float da);
 void aceleracion(float da, float &vx, float &vy);
+void pintar_nivel(int num_nivel, BITMAP *buffer);
+void explotar(float cx, float cy, BITMAP *buffer, int num_nivel);
 #endif // MAIN_H_INCLUDED
