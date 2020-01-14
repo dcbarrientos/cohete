@@ -47,8 +47,12 @@
 			<Add library="C:/Dev/CodeBlocks/Libs/allegro-4.2.3/lib/liballp_s.a" />
 			<Add directory="C:/Dev/CodeBlocks/Libs/allegro-4.2.3/lib" />
 		</Linker>
+		<Unit filename="graphics.cpp" />
+		<Unit filename="graphics.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="main.h" />
+		<Unit filename="math.cpp" />
+		<Unit filename="math.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
