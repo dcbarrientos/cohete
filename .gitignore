@@ -41,8 +41,8 @@ obj/
 *.layout
 *.depend
 *.o
-Allegro4.depend
-Allegro4.layout
 *.depend
 *.layout
+*.log
+*.rar
 *.o
