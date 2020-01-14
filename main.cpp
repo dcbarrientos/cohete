@@ -50,6 +50,10 @@ int main()
             }
         }
 
+        if(key[KEY_SPACE]){
+            explotar(cx, cy, buffer, num_nivel);
+        }
+
         if(cy > height)
             explotar(cx, cy, buffer, num_nivel);
 
@@ -166,6 +170,10 @@ void explotar(float cx, float cy, BITMAP *buffer, int num_nivel){
     float x[12] = {cx - 10, cx + 10, cx, cx, cx + 15, cx - 15, cx + 5, cx - 10, cx + 10, cx - 5, cx - 10, cx + 10};
     float y[12] = {cy, cy, cy - 15, cy + 15, cy - 15, cy + 15, cy + 5, cy - 10, cy - 10, cy + 10, cy, cy};
 
+    //Desplazamiento de los elementos de la explosion
+    float dx[6] = {7, 7, 0, -7, -7, 0};
+    float dy[6] = {0, -7, -7, -7, 0, 7};
+
     clear(screen);
     do{
         clear(buffer);
@@ -173,8 +181,15 @@ void explotar(float cx, float cy, BITMAP *buffer, int num_nivel){
         for(int i = 0; i <= 10; i+=2){
             line(buffer, x[i], y[i], x[i+1], y[i + 1], 0xffffff);
             rotar(x[i + 1], y[i + 1], x[i], y[i], 5);
-        }
+
+            x[i] += dx[i / 2];
+            y[i] += dy[i / 2];
+            x[i + 1] += dx[i / 2];
+            y[i + 1] += dy[i / 2];
+         }
+
         blit(buffer, screen, 0, 0, 0, 0, WIDTH * BLOCK_SIZE, HEIGHT * BLOCK_SIZE);
+        rest(20);
     }while(!key[KEY_ESC]);
 }
 

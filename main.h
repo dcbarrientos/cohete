@@ -19,7 +19,6 @@
 #define NORMAL_FUEL_COLOR 0x999999
 #define DANGER_FUEL_COLOR 0xff0000
 
-
 void pintar_nave(float cx, float cy, BITMAP *buffer);
 void pintar_motor(float da, float cx, float cy, BITMAP *buffer);
 void pintar_medidor_combustible(bool is_burning, float &fuel, BITMAP *buffer);
