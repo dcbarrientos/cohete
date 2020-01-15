@@ -6,8 +6,9 @@
 
 using namespace std;
 
-float base_aterrizaje[4] = {0, 0, 0, 0};
+float base_aterrizaje[4];
 vector<vector<float>> nivel;
+bool aterrizo = false;
 
 int main()
 {
@@ -22,14 +23,13 @@ int main()
     float vx, vy;
     vx = vy = 0;
 
-    cx = 100;
-    cy = 100;
+    cx = 50;
+    cy = 50;
 
     float num_nivel = 2;
     bool is_burning;
 
     load_level(num_nivel);
-
     while(!key[KEY_ESC] && !is_game_over(cx, cy, buffer, num_nivel) && !aterrizar(cx, cy, vx, vy, buffer, num_nivel)){
         is_burning = false;
         clear_to_color(buffer, 0x000000);
@@ -67,7 +67,10 @@ int main()
 
         rest(20);
     }
-    cout << "Perdiste!!!" << endl;
+    if(aterrizo)
+        cout << "Aterrizaste!!!!" << endl;
+    else
+        cout << "Perdiste!!!" << endl;
 
     return 0;
 }
@@ -89,17 +92,30 @@ bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel){
         explotar(cx, cy, buffer, num_nivel);
         return true;
     }
+    if(colision_nave(cx, cy)){
+        explotar(cx, cy, buffer, num_nivel);
+        return true;
+    }
 
     return false;
 }
 
 bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_nivel){
     // 450, 10 y 100 son coordenadas de la base de aterrizaje.
-    if(cy + 20 >= 450 && cx - 20 >= 10 && cx + 20 <= 100){
-        if(vy <= 1.5)
-            return true;
-        else
-            explotar(cx, cy, buffer, num_nivel);
+    if(cy + 20 >= base_aterrizaje[1]){
+        if(cx - 20 >= base_aterrizaje[0] && cx + 20 <= base_aterrizaje[2]){
+            if(vy <= 1.5){
+                aterrizo = true;
+                return true;
+            }else
+                explotar(cx, cy, buffer, num_nivel);
+        }else{
+            if(cx - 20 >= base_aterrizaje[0] && cx + 20 > base_aterrizaje[2]){
+                explotar(cx, cy, buffer, num_nivel);
+            }else if(cx - 20 < base_aterrizaje[0] && cx + 20 <= base_aterrizaje[2]){
+                explotar(cx, cy, buffer, num_nivel);
+            }
+        }
     }
 
     return false;
@@ -107,10 +123,10 @@ bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_n
 
 void load_level(int num_level){
     if(num_level == 1){
-        base_aterrizaje[0] = 10;
-        base_aterrizaje[1] = 450;
-        base_aterrizaje[2] = 100;
-        base_aterrizaje[3] = 500;
+        base_aterrizaje[0] = 10;    //x1
+        base_aterrizaje[1] = 450;   //y1
+        base_aterrizaje[2] = 100;   //x2
+        base_aterrizaje[3] = 500;   //y2
 
     }
     if(num_level == 2){
@@ -119,28 +135,10 @@ void load_level(int num_level){
         base_aterrizaje[2] = 100;
         base_aterrizaje[3] = 500;
 
-        nivel.resize(3);
-        nivel[0].resize(6);
-        nivel[0][0] = 400;
-        nivel[0][1] = 500;
-        nivel[0][2] = 300;
-        nivel[0][3] = 500;
-        nivel[0][4] = 300;
-        nivel[0][5] = 200;
-        nivel[1].resize(6);
-        nivel[1][0] = 300;
-        nivel[1][1] = 0;
-        nivel[1][2] = 500;
-        nivel[1][3] = 0;
-        nivel[1][4] = 500;
-        nivel[1][5] = 400;
-        nivel[2].resize(6);
-        nivel[2][0] = 620;
-        nivel[2][1] = 500;
-        nivel[2][2] = 700;
-        nivel[2][3] = 500;
-        nivel[2][4] = 620;
-        nivel[2][5] = 230;
+        nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200});
+        nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400});
+        nivel.insert(nivel.end(), {620, 500, 700, 500, 620, 230});
+        //nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500});
     }
 }
 
@@ -158,5 +156,47 @@ float get_screen_width(){
 
 float get_screen_height() {
     return HEIGHT * BLOCK_SIZE;
+}
+
+/*
+* p1x y p1y son el punto superior izquierdo de la nave.
+* p2x y p2y son el punto inferior derecho de la nave.
+*/
+bool colision_triangulo(float x1, float y1, float x2, float y2, float p1x, float p1y, float p2x, float p2y){
+    float m = (y2 - y1) / (x2 - x1);
+    //m>0 triangulo con pendiente a la derecha, m < 0 triangulo izquierdo
+    float b = y1 - m * x1;
+    //Equacion de una recta es y = mx + b
+    if(m > 0){
+        if(x1 <= p1x && p1x <= x2){
+            if(p2y >= m*p1x + b) return true;
+        }else{
+            if(p1x <= x1 && x1 <= p2x){
+                if(y1 <= p2y) return true;
+            }
+        }
+    }else if(m < 0){
+        if(x1 <= p2x && p2x <= x2){
+            if(p2y >= m*p2x + b) return true;
+        }else{
+            if(p1x <= x2 && x2 <= p2x){
+                if(y2 <= p2y) return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool colision_nave(float cx, float cy){
+    float r1x = cx - 20;
+    float r1y = cy - 15;
+    float r2x = cx + 20;
+    float r2y = cy + 15;
+
+    for(int unsigned i = 0; i < nivel.size(); i++){
+        if(colision_triangulo(nivel[i][0], nivel[i][1], nivel[i][4], nivel[i][5], r1x, r1y, r2x, r2y))
+            return true;
+    }
+    return false;
 }
 

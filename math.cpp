@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "math.h"
 
 /*
@@ -30,4 +32,3 @@ void aceleracion(float da, float &vx, float &vy){
     vx += ax;
     vy += ay;
 }
-
