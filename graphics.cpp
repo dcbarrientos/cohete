@@ -1,5 +1,6 @@
 #include "graphics.h"
 #include "math.h"
+#include "main.h"
 
 void pintar_nave(float cx, float cy, BITMAP *buffer){
     const float nave[22] = {-4, 4, -4, 2, -2, 0, -2, -2, 0, -3, 2, -2, 2, 0, 4, 2, 4, 4, -2, 0, 2, 0};
@@ -43,14 +44,19 @@ void pintar_medidor_combustible(bool is_burning, float &fuel, BITMAP *buffer){
 }
 
 void pintar_nivel(int num_nivel, BITMAP *buffer){
+    float *base_aterrizaje = get_base_aterrizaje();
+    std::vector<std::vector<float>> nivel = get_nivel();
+
     if(num_nivel == 1){
-        rectfill(buffer, 10, 450, 100, 500, 0x999999);
+        //rectfill(buffer, 10, 450, 100, 500, 0x999999);
+        rectfill(buffer, base_aterrizaje[0], base_aterrizaje[1], base_aterrizaje[2], base_aterrizaje[3], 0x999999);
     }
     if(num_nivel == 2){
-        triangle(buffer, 400, 500, 300, 500, 300, 200, 0x999999);
-        triangle(buffer, 300, 0, 500, 0, 500, 400, 0x999999);
-        triangle(buffer, 620, 500, 700, 500, 620, 230, 0x999999);
-        rectfill(buffer, 10, 450, 100, 500, 0x999999);
+        for(int unsigned i = 0; i < nivel.size(); i++){
+            triangle(buffer, nivel[i][0], nivel[i][1], nivel[i][2], nivel[i][3], nivel[i][4], nivel[i][5], 0x999999);
+        }
+
+        rectfill(buffer, base_aterrizaje[0], base_aterrizaje[1], base_aterrizaje[2], base_aterrizaje[3], 0x999999);
     }
 }
 

@@ -3,11 +3,11 @@
 #include "math.h"
 
 #include <iostream>
-//#include <allegro.h>
-//#include <math.h>
-
 
 using namespace std;
+
+float base_aterrizaje[4] = {0, 0, 0, 0};
+vector<vector<float>> nivel;
 
 int main()
 {
@@ -27,7 +27,10 @@ int main()
 
     float num_nivel = 2;
     bool is_burning;
-    while(!key[KEY_ESC] && !is_game_over(cx, cy, buffer, num_nivel)){
+
+    load_level(num_nivel);
+
+    while(!key[KEY_ESC] && !is_game_over(cx, cy, buffer, num_nivel) && !aterrizar(cx, cy, vx, vy, buffer, num_nivel)){
         is_burning = false;
         clear_to_color(buffer, 0x000000);
         pintar_nivel(num_nivel, buffer);
@@ -80,8 +83,6 @@ void mover_nave(float &cx, float &cy, float &vx, float &vy){
     cy += vy;
 }
 
-
-
 bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel){
     //El tamaño de la nave es de 40 de ancho por 20 de alto.
     if(cx - 20 >= get_screen_width() || cx + 20 <= 0 || cy + 20 <= 0 || cy - 20 >= get_screen_height()){
@@ -92,6 +93,65 @@ bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel){
     return false;
 }
 
+bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_nivel){
+    // 450, 10 y 100 son coordenadas de la base de aterrizaje.
+    if(cy + 20 >= 450 && cx - 20 >= 10 && cx + 20 <= 100){
+        if(vy <= 1.5)
+            return true;
+        else
+            explotar(cx, cy, buffer, num_nivel);
+    }
+
+    return false;
+}
+
+void load_level(int num_level){
+    if(num_level == 1){
+        base_aterrizaje[0] = 10;
+        base_aterrizaje[1] = 450;
+        base_aterrizaje[2] = 100;
+        base_aterrizaje[3] = 500;
+
+    }
+    if(num_level == 2){
+        base_aterrizaje[0] = 10;
+        base_aterrizaje[1] = 450;
+        base_aterrizaje[2] = 100;
+        base_aterrizaje[3] = 500;
+
+        nivel.resize(3);
+        nivel[0].resize(6);
+        nivel[0][0] = 400;
+        nivel[0][1] = 500;
+        nivel[0][2] = 300;
+        nivel[0][3] = 500;
+        nivel[0][4] = 300;
+        nivel[0][5] = 200;
+        nivel[1].resize(6);
+        nivel[1][0] = 300;
+        nivel[1][1] = 0;
+        nivel[1][2] = 500;
+        nivel[1][3] = 0;
+        nivel[1][4] = 500;
+        nivel[1][5] = 400;
+        nivel[2].resize(6);
+        nivel[2][0] = 620;
+        nivel[2][1] = 500;
+        nivel[2][2] = 700;
+        nivel[2][3] = 500;
+        nivel[2][4] = 620;
+        nivel[2][5] = 230;
+    }
+}
+
+float* get_base_aterrizaje(){
+    return base_aterrizaje;
+}
+
+vector<vector<float>> get_nivel(){
+    return nivel;
+}
+
 float get_screen_width(){
     return WIDTH * BLOCK_SIZE;
 }
@@ -99,3 +159,4 @@ float get_screen_width(){
 float get_screen_height() {
     return HEIGHT * BLOCK_SIZE;
 }
+
