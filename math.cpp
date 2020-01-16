@@ -32,10 +32,11 @@ void aceleracion(float da, float &vx, float &vy){
     vy += ay;
 }
 
+/*
+* Devuelve 0 si el triangulo está arriba, 1 si está abajo.
+*/
 void get_puntos_hipotenusa(std::vector<float> puntos, float &x1, float &y1, float &x2, float &y2){
-/*    puntos[0] puntos[1]
-    puntos[2] puntos[3]
-    puntos[4] puntos[5]*/
+
     if(puntos[0] != puntos[2] && puntos[1] != puntos[3]){
         x1 = puntos[0];
         y1 = puntos[1];
@@ -53,6 +54,7 @@ void get_puntos_hipotenusa(std::vector<float> puntos, float &x1, float &y1, floa
         x2 = puntos[4];
         y2 = puntos[5];
     }
+
     float t1, t2;
     if(x1 > x2){
         t1 = x1;
@@ -62,20 +64,4 @@ void get_puntos_hipotenusa(std::vector<float> puntos, float &x1, float &y1, floa
         x2 = t1;
         y2 = t2;
     }
-    /*
-    if(puntos[0] == puntos[2]){
-        x2 = puntos[4];
-        y2 = puntos[5];
-        if(puntos[1] == y2){
-            x1 = puntos[2];
-            y1 = puntos[3];
-        }else{
-            x1 = puntos[2];
-            y1 = puntos[3];
-        }
-    }else if(puntos[2] == puntos[4]){
-        x1 = puntos[0];
-        y1 = puntos[1];
-
-    }*/
 }

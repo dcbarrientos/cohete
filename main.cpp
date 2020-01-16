@@ -146,10 +146,10 @@ void load_level(int num_level){
         base_aterrizaje[2] = 100;
         base_aterrizaje[3] = 500;
 
-        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500});
-        nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500});
-        nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500});
-        nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0});
+        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0, TRIANGULO_ARRIBA});
     }
 }
 
@@ -173,44 +173,75 @@ float get_screen_height() {
 * p1x y p1y son el punto superior izquierdo de la nave.
 * p2x y p2y son el punto inferior derecho de la nave.
 */
-bool colision_triangulo(float x1, float y1, float x2, float y2, float p1x, float p1y, float p2x, float p2y){
+bool colision_triangulo(float x1, float y1, float x2, float y2, float p1x, float p1y, float p2x, float p2y, int tipo_triangulo){
     float m = (y2 - y1) / (x2 - x1);
     //m>0 triangulo con pendiente a la derecha, m < 0 triangulo izquierdo
     float b = y1 - m * x1;
     //Equacion de una recta es y = mx + b
-    if(m > 0){
-        if(x1 <= p1x && p1x <= x2){
-            if(p2y >= m*p1x + b) return true;
-        }else{
-            if(p1x <= x1 && x1 <= p2x){
-                if(y1 <= p2y) return true;
+
+    if(tipo_triangulo == TRIANGULO_ABAJO){
+        if(m > 0){
+            if(x1 <= p1x && p1x <= x2){
+                if(p2y >= m*p1x + b) return true;
+            }else{
+                if(p1x <= x1 && x1 <= p2x){
+                    if(y1 <= p2y) return true;
+                }
             }
-        }
-    }else if(m < 0){
-        if(x1 <= p2x && p2x <= x2){
-            if(p2y >= m*p2x + b) return true;
-        }else{
-            if(p1x <= x2 && x2 <= p2x){
-                if(y2 <= p2y) return true;
+        }else if(m < 0){
+            if(x1 <= p2x && p2x <= x2){
+                if(p2y >= m*p2x + b) return true;
+            }else{
+                if(p1x <= x2 && x2 <= p2x){
+                    if(y2 <= p2y) return true;
+                }
             }
         }
     }
+    if(tipo_triangulo == TRIANGULO_ARRIBA){
+        if(m > 0){
+            if(x1 <= p2x && p2x <= x2){
+                if(p1y <= m*p2x + b) return true;
+            }else{
+                if(p1x <= x2 && x2 <= p2x){
+                    if(p1y <= y2) return true;
+                }
+            }
+            return false;
+        }else{
+            if(x1 <= p1x && p1x <= x2){
+                if(p1y <= m*p1x + b) return true;
+            }else{
+                if(p1x <= x1 && x1 <= p2x){
+                    if(p1y <= y1) return true;
+                }
+            }
+            return false;
+        }
+    }
+
     return false;
 }
 
 bool colision_nave(float cx, float cy){
-    float r1x = cx - 20;
-    float r1y = cy - 15;
-    float r2x = cx + 20;
-    float r2y = cy + 15;
-    float x1, y1, x2, y2;
+    //Hitbox de la pata izquierda
+    float r1x = cx - 20, r1y = cy, r2x = cx - 10, r2y = cy + 20;
+    //Hitbox de la pata derecha
+    float p1x = cx + 10, p1y = cy, p2x = cx + 20, p2y = cy + 20;
+    //Hitbox del cuerpo de la nave
+    float q1x = cx - 10, q1y = cy - 15, q2x = cx + 10, q2y = cy;
 
+    //Coordenadas de la hipotenusa de los triangulos
+    float x1, y1, x2, y2;
     for(int unsigned i = 0; i < nivel.size(); i++){
         get_puntos_hipotenusa(nivel[i], x1, y1, x2, y2);
-        if(colision_triangulo(x1, y1, x2, y2, r1x, r1y, r2x, r2y))
+        cout << "(" << x1 << ", " << y1 << ")(" << x2 << ", " << y2 << ")" << endl;
+        if(colision_triangulo(x1, y1, x2, y2, r1x, r1y, r2x, r2y, nivel[i][6]))
             return true;
-        //if(colision_triangulo(nivel[i][0], nivel[i][1], nivel[i][4], nivel[i][5], r1x, r1y, r2x, r2y))
-        //    return true;
+        if(colision_triangulo(x1, y1, x2, y2, p1x, p1y, p2x, p2y, nivel[i][6]))
+            return true;
+        if(colision_triangulo(x1, y1, x2, y2, q1x, q1y, q2x, q2y, nivel[i][6]))
+            return true;
     }
     return false;
 }
