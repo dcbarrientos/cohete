@@ -10,8 +10,18 @@ float base_aterrizaje[4];
 vector<vector<float>> nivel;
 bool aterrizo = false;
 
-int main()
+int main(int argc, char *argv[])
 {
+    float num_nivel = 3;
+    //Esto debería volar más adelante
+    if(argc > 1){
+        num_nivel = atof(argv[1]);
+        if(num_nivel > 3){
+            cout << "No lo hice!" << endl;
+            return -1;
+        }
+    }
+
     allegro_init();
     install_keyboard();
     set_color_depth(32);
@@ -23,10 +33,9 @@ int main()
     float vx, vy;
     vx = vy = 0;
 
-    cx = 50;
+    cx = 680;
     cy = 50;
 
-    float num_nivel = 3;
     bool is_burning;
 
     load_level(num_nivel);
@@ -53,9 +62,6 @@ int main()
                 is_burning = true;
             }
         }
-
-        if(cy > get_screen_height())
-            explotar(cx, cy, buffer, num_nivel);
 
         pintar_medidor_combustible(is_burning, fuel, buffer);
 
@@ -110,9 +116,10 @@ bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_n
             }else
                 explotar(cx, cy, buffer, num_nivel);
         }else{
-            if(cx - 20 >= base_aterrizaje[0] && cx + 20 > base_aterrizaje[2]){
+            //Prueba la pata izquierda.
+            if(cx - 20 >= base_aterrizaje[0] && cx - 20 < base_aterrizaje[2]){
                 explotar(cx, cy, buffer, num_nivel);
-            }else if(cx - 20 < base_aterrizaje[0] && cx + 20 <= base_aterrizaje[2]){
+            }else if(cx + 20 < base_aterrizaje[2] && cx + 20 >= base_aterrizaje[0]){    //Pruebo la para derecha
                 explotar(cx, cy, buffer, num_nivel);
             }
         }
@@ -135,10 +142,10 @@ void load_level(int num_level){
         base_aterrizaje[2] = 100;
         base_aterrizaje[3] = 500;
 
-        nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200});
-        //nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400});
-        nivel.insert(nivel.end(), {620, 500, 700, 500, 620, 230});
-        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500});
+        nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400, TRIANGULO_ARRIBA});
+        nivel.insert(nivel.end(), {620, 500, 700, 500, 620, 230, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
     }
     if(num_level == 3){
         base_aterrizaje[0] = 10;
@@ -235,7 +242,10 @@ bool colision_nave(float cx, float cy){
     float x1, y1, x2, y2;
     for(int unsigned i = 0; i < nivel.size(); i++){
         get_puntos_hipotenusa(nivel[i], x1, y1, x2, y2);
-        cout << "(" << x1 << ", " << y1 << ")(" << x2 << ", " << y2 << ")" << endl;
+
+        if(DEBUG)
+            cout << "(" << x1 << ", " << y1 << ")(" << x2 << ", " << y2 << ")" << endl;
+
         if(colision_triangulo(x1, y1, x2, y2, r1x, r1y, r2x, r2y, nivel[i][6]))
             return true;
         if(colision_triangulo(x1, y1, x2, y2, p1x, p1y, p2x, p2y, nivel[i][6]))

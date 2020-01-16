@@ -14,7 +14,7 @@
 #define FUEL_MAX 100
 
 #define BLOCK_SIZE 5    //Number of pixels per block
-#define DEBUG TRUE
+#define DEBUG FALSE
 
 void load_level(int num_level);
 void mover_nave(float &cx, float &cy, float &vx, float &vy);
