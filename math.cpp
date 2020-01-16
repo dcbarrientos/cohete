@@ -1,4 +1,3 @@
-#include <vector>
 
 #include "math.h"
 
@@ -31,4 +30,52 @@ void aceleracion(float da, float &vx, float &vy){
     rotar(ax, ay, 0, 0, da);
     vx += ax;
     vy += ay;
+}
+
+void get_puntos_hipotenusa(std::vector<float> puntos, float &x1, float &y1, float &x2, float &y2){
+/*    puntos[0] puntos[1]
+    puntos[2] puntos[3]
+    puntos[4] puntos[5]*/
+    if(puntos[0] != puntos[2] && puntos[1] != puntos[3]){
+        x1 = puntos[0];
+        y1 = puntos[1];
+        x2 = puntos[2];
+        y2 = puntos[3];
+
+    }else if(puntos[2] != puntos[4] && puntos[3] != puntos[5]){
+        x1 = puntos[2];
+        y1 = puntos[3];
+        x2 = puntos[4];
+        y2 = puntos[5];
+    }else {
+        x1 = puntos[0];
+        y1 = puntos[1];
+        x2 = puntos[4];
+        y2 = puntos[5];
+    }
+    float t1, t2;
+    if(x1 > x2){
+        t1 = x1;
+        t2 = y1;
+        x1 = x2;
+        y1 = y2;
+        x2 = t1;
+        y2 = t2;
+    }
+    /*
+    if(puntos[0] == puntos[2]){
+        x2 = puntos[4];
+        y2 = puntos[5];
+        if(puntos[1] == y2){
+            x1 = puntos[2];
+            y1 = puntos[3];
+        }else{
+            x1 = puntos[2];
+            y1 = puntos[3];
+        }
+    }else if(puntos[2] == puntos[4]){
+        x1 = puntos[0];
+        y1 = puntos[1];
+
+    }*/
 }

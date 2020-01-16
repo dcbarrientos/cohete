@@ -47,17 +47,16 @@ void pintar_nivel(int num_nivel, BITMAP *buffer){
     float *base_aterrizaje = get_base_aterrizaje();
     std::vector<std::vector<float>> nivel = get_nivel();
 
-    if(num_nivel == 1){
-        //rectfill(buffer, 10, 450, 100, 500, 0x999999);
-        rectfill(buffer, base_aterrizaje[0], base_aterrizaje[1], base_aterrizaje[2], base_aterrizaje[3], 0x999999);
-    }
-    if(num_nivel == 2){
+    //if(num_nivel == 1){
+    //    rectfill(buffer, base_aterrizaje[0], base_aterrizaje[1], base_aterrizaje[2], base_aterrizaje[3], 0x999999);
+    //}
+
+    if(nivel.size() > 0){
         for(int unsigned i = 0; i < nivel.size(); i++){
             triangle(buffer, nivel[i][0], nivel[i][1], nivel[i][2], nivel[i][3], nivel[i][4], nivel[i][5], 0x999999);
         }
-
-        rectfill(buffer, base_aterrizaje[0], base_aterrizaje[1], base_aterrizaje[2], base_aterrizaje[3], 0x999999);
     }
+    rectfill(buffer, base_aterrizaje[0], base_aterrizaje[1], base_aterrizaje[2], base_aterrizaje[3], 0x999999);
 }
 
 void explotar(float cx, float cy, BITMAP *buffer, int num_nivel){

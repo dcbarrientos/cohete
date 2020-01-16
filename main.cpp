@@ -26,7 +26,7 @@ int main()
     cx = 50;
     cy = 50;
 
-    float num_nivel = 2;
+    float num_nivel = 3;
     bool is_burning;
 
     load_level(num_nivel);
@@ -136,9 +136,20 @@ void load_level(int num_level){
         base_aterrizaje[3] = 500;
 
         nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200});
-        nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400});
+        //nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400});
         nivel.insert(nivel.end(), {620, 500, 700, 500, 620, 230});
-        //nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500});
+        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500});
+    }
+    if(num_level == 3){
+        base_aterrizaje[0] = 10;
+        base_aterrizaje[1] = 450;
+        base_aterrizaje[2] = 100;
+        base_aterrizaje[3] = 500;
+
+        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500});
+        nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500});
+        nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500});
+        nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0});
     }
 }
 
@@ -192,10 +203,14 @@ bool colision_nave(float cx, float cy){
     float r1y = cy - 15;
     float r2x = cx + 20;
     float r2y = cy + 15;
+    float x1, y1, x2, y2;
 
     for(int unsigned i = 0; i < nivel.size(); i++){
-        if(colision_triangulo(nivel[i][0], nivel[i][1], nivel[i][4], nivel[i][5], r1x, r1y, r2x, r2y))
+        get_puntos_hipotenusa(nivel[i], x1, y1, x2, y2);
+        if(colision_triangulo(x1, y1, x2, y2, r1x, r1y, r2x, r2y))
             return true;
+        //if(colision_triangulo(nivel[i][0], nivel[i][1], nivel[i][4], nivel[i][5], r1x, r1y, r2x, r2y))
+        //    return true;
     }
     return false;
 }
