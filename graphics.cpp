@@ -75,12 +75,14 @@ void explotar(float cx, float cy, BITMAP *buffer, int num_nivel){
             y[i] += dy[i / 2];
             x[i + 1] += dx[i / 2];
             y[i + 1] += dy[i / 2];
-         }
-        textout_centre_ex(buffer, font, "Presione ESC para terminar" , get_screen_width() / 2 - 50, get_screen_height() / 2 - 10, 0x999999, 0x000000);
+        }
+
+        textout_centre_ex(buffer, font, "Press (Space) to try again.", 370, 240, 0xfbff00, 0x000000);
+        textout_centre_ex(buffer, font, "Press (ESC) to exit.", 370, 250, 0xfbff00, 0x000000);
 
         blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
         rest(20);
-    }while(!key[KEY_ESC]);
+    }while(!key[KEY_ESC] && !key[KEY_SPACE]);
 }
 
 void linea(float x1, float y1, float x2, float y2, BITMAP *buffer){

@@ -11,6 +11,7 @@ vector<vector<float>> nivel;
 bool aterrizo = false;
 float fuel;
 float cx, cy;
+float vx, vy;
 
 int main(int argc, char *argv[])
 {
@@ -32,19 +33,18 @@ int main(int argc, char *argv[])
     set_gfx_mode(GFX_AUTODETECT_WINDOWED, get_screen_width(), get_screen_height(), 0, 0);
     BITMAP *buffer = create_bitmap(get_screen_width(), get_screen_height());
 
-    fuel = FUEL_MAX;
-    float vx, vy;
-    vx = vy = 0;
-
-    cx = 680;
-    cy = 50;
-
     bool is_burning;
 
+    while(!key[KEY_SPACE]){
+        textout_centre_ex(screen, font, "Press (SPACE) for the next level.", 370, 250, 0xFBFF00, 0x000000);
+        rest(20);
+    }
+
     load_level(num_nivel);
-    while(!key[KEY_ESC] && !is_game_over(cx, cy, buffer, num_nivel)){
+    while(!key[KEY_ESC]){
         is_burning = false;
         clear_to_color(buffer, 0x000000);
+
         pintar_nivel(num_nivel, buffer);
         mover_nave(cx, cy, vx, vy);
 
@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
         pintar_nave(cx, cy, buffer);
         blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
 
+        //Verifico si aterrizó.
         if(aterrizar(cx, cy, vx, vy, buffer, num_nivel)){
-
             if(num_nivel < cantidad_niveles)
                 num_nivel++;
 
@@ -83,12 +83,13 @@ int main(int argc, char *argv[])
             load_level(num_nivel);
         }
 
+        //Verifico si perdió o salió del juego
+        if(is_game_over(cx, cy, buffer, num_nivel)){
+            explotar(cx, cy, buffer, num_nivel);
+            load_level(num_nivel);
+        }
         rest(20);
     }
-    if(aterrizo)
-        cout << "Aterrizaste!!!!" << endl;
-    else
-        cout << "Perdiste!!!" << endl;
 
     return 0;
 }
@@ -106,33 +107,47 @@ void mover_nave(float &cx, float &cy, float &vx, float &vy){
 
 bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel){
     //El tamaño de la nave es de 40 de ancho por 20 de alto.
+
+    //Verifico si salió de la pantalla.
     if(cx - 20 >= get_screen_width() || cx + 20 <= 0 || cy + 20 <= 0 || cy - 20 >= get_screen_height()){
         explotar(cx, cy, buffer, num_nivel);
         return true;
     }
+
+    //Verifico si choco con un triangulo
     if(colision_nave(cx, cy)){
         explotar(cx, cy, buffer, num_nivel);
         return true;
+    }
+
+    //Verifico si choco con la base
+    if(cy + 20 >= base_aterrizaje[1]){
+        if(cx - 20 >= base_aterrizaje[0] && cx + 20 <= base_aterrizaje[2]){
+            if(vy >1.5){
+                explotar(cx, cy, buffer, num_nivel);
+                return true;
+            }
+        }else{
+            //Prueba la pata izquierda.
+            if(cx - 20 >= base_aterrizaje[0] && cx - 20 < base_aterrizaje[2]){
+                explotar(cx, cy, buffer, num_nivel);
+                return true;
+            }else if(cx + 20 < base_aterrizaje[2] && cx + 20 >= base_aterrizaje[0]){    //Pruebo la para derecha
+                explotar(cx, cy, buffer, num_nivel);
+                return true;
+            }
+        }
     }
 
     return false;
 }
 
 bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_nivel){
-    // 450, 10 y 100 son coordenadas de la base de aterrizaje.
     if(cy + 20 >= base_aterrizaje[1]){
         if(cx - 20 >= base_aterrizaje[0] && cx + 20 <= base_aterrizaje[2]){
             if(vy <= 1.5){
                 aterrizo = true;
                 return true;
-            }else
-                explotar(cx, cy, buffer, num_nivel);
-        }else{
-            //Prueba la pata izquierda.
-            if(cx - 20 >= base_aterrizaje[0] && cx - 20 < base_aterrizaje[2]){
-                explotar(cx, cy, buffer, num_nivel);
-            }else if(cx + 20 < base_aterrizaje[2] && cx + 20 >= base_aterrizaje[0]){    //Pruebo la para derecha
-                explotar(cx, cy, buffer, num_nivel);
             }
         }
     }
@@ -144,6 +159,8 @@ void load_level(int num_level){
     nivel.clear();
     cx = 680;
     cy = 50;
+    vx = 0;
+    vy = -2;
     fuel = FUEL_MAX;
 
     if(num_level == 1){
