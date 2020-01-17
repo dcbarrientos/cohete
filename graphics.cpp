@@ -55,13 +55,14 @@ void pintar_nivel(int num_nivel, BITMAP *buffer){
     rectfill(buffer, base_aterrizaje[0], base_aterrizaje[1], base_aterrizaje[2], base_aterrizaje[3], 0x999999);
 }
 
-void explotar(float cx, float cy, BITMAP *buffer, int num_nivel){
+void explotar(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosion){
     float x[12] = {cx - 10, cx + 10, cx, cx, cx + 15, cx - 15, cx + 5, cx - 10, cx + 10, cx - 5, cx - 10, cx + 10};
     float y[12] = {cy, cy, cy - 15, cy + 15, cy - 15, cy + 15, cy + 5, cy - 10, cy - 10, cy + 10, cy, cy};
 
     //Desplazamiento de los elementos de la explosion
     float dx[6] = {7, 7, 0, -7, -7, 0};
     float dy[6] = {0, -7, -7, -7, 0, 7};
+    play_sample(explosion, 255, 128, 1000, false);
 
     clear(screen);
     do{
@@ -83,6 +84,8 @@ void explotar(float cx, float cy, BITMAP *buffer, int num_nivel){
         blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
         rest(20);
     }while(!key[KEY_ESC] && !key[KEY_SPACE]);
+    stop_sample(explosion);
+    //destroy_sample(explosion);
 }
 
 void linea(float x1, float y1, float x2, float y2, BITMAP *buffer){

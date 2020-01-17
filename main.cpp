@@ -27,11 +27,18 @@ int main(int argc, char *argv[])
         }
     }
 
+    //Inicializo modo gráfico
     allegro_init();
     install_keyboard();
     set_color_depth(32);
     set_gfx_mode(GFX_AUTODETECT_WINDOWED, get_screen_width(), get_screen_height(), 0, 0);
     BITMAP *buffer = create_bitmap(get_screen_width(), get_screen_height());
+
+    //Inicializo sonido
+    install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, "A");
+    int rocket_vol = 100;
+    SAMPLE *rocket = load_sample("sounds\\rocket.wav");
+    SAMPLE *explosion = load_sample("sounds\\explosion.wav");
 
     bool is_burning;
 
@@ -53,17 +60,26 @@ int main(int argc, char *argv[])
                 aceleracion(0, vx, vy); //angulo 0 es aceleracion ghacia arriba
                 pintar_motor(0, cx, cy, buffer);
                 is_burning = true;
+                play_sample(explosion, rocket_vol, 128, 1000, false);
+
             }
             if(key[KEY_RIGHT]){
                 aceleracion(-90, vx, vy); //rota a la derecha
                 pintar_motor(-90, cx, cy, buffer);
                 is_burning = true;
+                play_sample(explosion, rocket_vol, 128, 1000, false);
             }
             if(key[KEY_LEFT]){
                 aceleracion(90, vx, vy); //rota a la derecha
                 pintar_motor(90, cx, cy, buffer);
                 is_burning = true;
+                play_sample(explosion, rocket_vol, 128, 1000, false);
             }
+
+            if(!key[KEY_LEFT] && !key[KEY_RIGHT] && !key[KEY_UP]){
+                stop_sample(rocket);
+            }
+            cout << key[KEY_UP] << endl;
         }
 
         pintar_medidor_combustible(is_burning, fuel, buffer);
@@ -84,8 +100,8 @@ int main(int argc, char *argv[])
         }
 
         //Verifico si perdió o salió del juego
-        if(is_game_over(cx, cy, buffer, num_nivel)){
-            explotar(cx, cy, buffer, num_nivel);
+        if(is_game_over(cx, cy, buffer, num_nivel, explosion)){
+            explotar(cx, cy, buffer, num_nivel, explosion);
             load_level(num_nivel);
         }
         rest(20);
@@ -105,18 +121,18 @@ void mover_nave(float &cx, float &cy, float &vx, float &vy){
     cy += vy;
 }
 
-bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel){
+bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosion){
     //El tamaño de la nave es de 40 de ancho por 20 de alto.
 
     //Verifico si salió de la pantalla.
     if(cx - 20 >= get_screen_width() || cx + 20 <= 0 || cy + 20 <= 0 || cy - 20 >= get_screen_height()){
-        explotar(cx, cy, buffer, num_nivel);
+        explotar(cx, cy, buffer, num_nivel, explosion);
         return true;
     }
 
     //Verifico si choco con un triangulo
     if(colision_nave(cx, cy)){
-        explotar(cx, cy, buffer, num_nivel);
+        explotar(cx, cy, buffer, num_nivel, explosion);
         return true;
     }
 
@@ -124,16 +140,16 @@ bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel){
     if(cy + 20 >= base_aterrizaje[1]){
         if(cx - 20 >= base_aterrizaje[0] && cx + 20 <= base_aterrizaje[2]){
             if(vy >1.5){
-                explotar(cx, cy, buffer, num_nivel);
+                explotar(cx, cy, buffer, num_nivel, explosion);
                 return true;
             }
         }else{
             //Prueba la pata izquierda.
             if(cx - 20 >= base_aterrizaje[0] && cx - 20 < base_aterrizaje[2]){
-                explotar(cx, cy, buffer, num_nivel);
+                explotar(cx, cy, buffer, num_nivel, explosion);
                 return true;
             }else if(cx + 20 < base_aterrizaje[2] && cx + 20 >= base_aterrizaje[0]){    //Pruebo la para derecha
-                explotar(cx, cy, buffer, num_nivel);
+                explotar(cx, cy, buffer, num_nivel, explosion);
                 return true;
             }
         }
@@ -176,10 +192,10 @@ void load_level(int num_level){
         base_aterrizaje[2] = 100;
         base_aterrizaje[3] = 500;
 
-        nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400, TRIANGULO_ARRIBA});
-        nivel.insert(nivel.end(), {620, 500, 700, 500, 620, 230, TRIANGULO_ABAJO});
         nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0, TRIANGULO_ARRIBA});
     }
     if(num_level == 3){
         base_aterrizaje[0] = 10;
@@ -187,11 +203,12 @@ void load_level(int num_level){
         base_aterrizaje[2] = 100;
         base_aterrizaje[3] = 500;
 
+        nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400, TRIANGULO_ARRIBA});
+        nivel.insert(nivel.end(), {620, 500, 700, 500, 620, 230, TRIANGULO_ABAJO});
         nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0, TRIANGULO_ARRIBA});
     }
+
 }
 
 float* get_base_aterrizaje(){
