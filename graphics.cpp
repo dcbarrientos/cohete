@@ -1,7 +1,7 @@
 #include "graphics.h"
 #include "math.h"
 #include "main.h"
-
+#include <iostream>
 void pintar_nave(float cx, float cy, BITMAP *buffer){
     const float nave[22] = {-4, 4, -4, 2, -2, 0, -2, -2, 0, -3, 2, -2, 2, 0, 4, 2, 4, 4, -2, 0, 2, 0};
 
@@ -62,7 +62,7 @@ void explotar(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosi
     //Desplazamiento de los elementos de la explosion
     float dx[6] = {7, 7, 0, -7, -7, 0};
     float dy[6] = {0, -7, -7, -7, 0, 7};
-    play_sample(explosion, 255, 128, 1000, false);
+    int v = play_sample(explosion, 255, 128, 1000, false);
 
     clear(screen);
     do{
@@ -83,8 +83,11 @@ void explotar(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosi
 
         blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
         rest(20);
+        std::cout << "V " << voice_check(v) << std::endl;
     }while(!key[KEY_ESC] && !key[KEY_SPACE]);
+        std::cout << "V " << voice_check(v) << std::endl;
     stop_sample(explosion);
+        std::cout << "V " << voice_check(v) << std::endl;
     //destroy_sample(explosion);
 }
 

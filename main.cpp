@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     //Inicializo sonido
     install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, "A");
-    int rocket_vol = 100;
+    int rocket_vol = 255;
     SAMPLE *rocket = load_sample("sounds\\rocket.wav");
     SAMPLE *explosion = load_sample("sounds\\explosion.wav");
 
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
         textout_centre_ex(screen, font, "Press (SPACE) for the next level.", 370, 250, 0xFBFF00, 0x000000);
         rest(20);
     }
-
+    int voice = 0;
     load_level(num_nivel);
     while(!key[KEY_ESC]){
         is_burning = false;
@@ -60,26 +60,27 @@ int main(int argc, char *argv[])
                 aceleracion(0, vx, vy); //angulo 0 es aceleracion ghacia arriba
                 pintar_motor(0, cx, cy, buffer);
                 is_burning = true;
-                play_sample(explosion, rocket_vol, 128, 1000, false);
+                if(voice_check(voice) != 0)
+                    voice = play_sample(explosion, rocket_vol, 128, 1000, true);
 
             }
             if(key[KEY_RIGHT]){
                 aceleracion(-90, vx, vy); //rota a la derecha
                 pintar_motor(-90, cx, cy, buffer);
                 is_burning = true;
-                play_sample(explosion, rocket_vol, 128, 1000, false);
+                if(voice_check(voice) == 0)
+                    voice = play_sample(explosion, rocket_vol, 128, 1000, true);
             }
             if(key[KEY_LEFT]){
                 aceleracion(90, vx, vy); //rota a la derecha
                 pintar_motor(90, cx, cy, buffer);
                 is_burning = true;
-                play_sample(explosion, rocket_vol, 128, 1000, false);
+                if(voice_check(voice) == 0)
+                    voice = play_sample(rocket, rocket_vol, 128, 1000, true);
             }
 
-            if(!key[KEY_LEFT] && !key[KEY_RIGHT] && !key[KEY_UP]){
+            if(voice_check(voice) != 0)
                 stop_sample(rocket);
-            }
-            cout << key[KEY_UP] << endl;
         }
 
         pintar_medidor_combustible(is_burning, fuel, buffer);
