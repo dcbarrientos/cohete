@@ -9,10 +9,14 @@ using namespace std;
 float base_aterrizaje[4];
 vector<vector<float>> nivel;
 bool aterrizo = false;
+float fuel;
+float cx, cy;
 
 int main(int argc, char *argv[])
 {
-    float num_nivel = 3;
+    float num_nivel = 1;
+    float cantidad_niveles = 3;
+
     //Esto debería volar más adelante
     if(argc > 1){
         num_nivel = atof(argv[1]);
@@ -28,8 +32,7 @@ int main(int argc, char *argv[])
     set_gfx_mode(GFX_AUTODETECT_WINDOWED, get_screen_width(), get_screen_height(), 0, 0);
     BITMAP *buffer = create_bitmap(get_screen_width(), get_screen_height());
 
-    float fuel = FUEL_MAX;
-    float cx, cy;
+    fuel = FUEL_MAX;
     float vx, vy;
     vx = vy = 0;
 
@@ -39,7 +42,7 @@ int main(int argc, char *argv[])
     bool is_burning;
 
     load_level(num_nivel);
-    while(!key[KEY_ESC] && !is_game_over(cx, cy, buffer, num_nivel) && !aterrizar(cx, cy, vx, vy, buffer, num_nivel)){
+    while(!key[KEY_ESC] && !is_game_over(cx, cy, buffer, num_nivel)){
         is_burning = false;
         clear_to_color(buffer, 0x000000);
         pintar_nivel(num_nivel, buffer);
@@ -65,11 +68,20 @@ int main(int argc, char *argv[])
 
         pintar_medidor_combustible(is_burning, fuel, buffer);
 
-        if(DEBUG)
-            cout << "x: " << cx << ", y: " << cy <<  " fuel: " << fuel << endl;
-
         pintar_nave(cx, cy, buffer);
         blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
+
+        if(aterrizar(cx, cy, vx, vy, buffer, num_nivel)){
+
+            if(num_nivel < cantidad_niveles)
+                num_nivel++;
+
+            while(!key[KEY_SPACE]){
+                textout_centre_ex(screen, font, "Press (SPACE) for the next level.", 370, 250, 0xFBFF00, 0x000000);
+                rest(20);
+            }
+            load_level(num_nivel);
+        }
 
         rest(20);
     }
@@ -129,6 +141,11 @@ bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_n
 }
 
 void load_level(int num_level){
+    nivel.clear();
+    cx = 680;
+    cy = 50;
+    fuel = FUEL_MAX;
+
     if(num_level == 1){
         base_aterrizaje[0] = 10;    //x1
         base_aterrizaje[1] = 450;   //y1
