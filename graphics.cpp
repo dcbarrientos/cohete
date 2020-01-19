@@ -83,12 +83,9 @@ void explotar(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosi
 
         blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
         rest(20);
-        std::cout << "V " << voice_check(v) << std::endl;
     }while(!key[KEY_ESC] && !key[KEY_SPACE]);
-        std::cout << "V " << voice_check(v) << std::endl;
+
     stop_sample(explosion);
-        std::cout << "V " << voice_check(v) << std::endl;
-    //destroy_sample(explosion);
 }
 
 void linea(float x1, float y1, float x2, float y2, BITMAP *buffer){

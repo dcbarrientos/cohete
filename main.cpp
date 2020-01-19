@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
         textout_centre_ex(screen, font, "Press (SPACE) for the next level.", 370, 250, 0xFBFF00, 0x000000);
         rest(20);
     }
+
     int voice = 0;
     load_level(num_nivel);
     while(!key[KEY_ESC]){
@@ -60,27 +61,31 @@ int main(int argc, char *argv[])
                 aceleracion(0, vx, vy); //angulo 0 es aceleracion ghacia arriba
                 pintar_motor(0, cx, cy, buffer);
                 is_burning = true;
-                if(voice_check(voice) != 0)
-                    voice = play_sample(explosion, rocket_vol, 128, 1000, true);
+
+                if(voice == 0 || voice_check(voice) == NULL){
+                    voice = play_sample(rocket, rocket_vol, 128, 1000, false);
+                }
 
             }
             if(key[KEY_RIGHT]){
                 aceleracion(-90, vx, vy); //rota a la derecha
                 pintar_motor(-90, cx, cy, buffer);
                 is_burning = true;
-                if(voice_check(voice) == 0)
-                    voice = play_sample(explosion, rocket_vol, 128, 1000, true);
+                if(voice_check(voice) == 0 || voice_check(voice) == NULL)
+                    voice = play_sample(rocket, rocket_vol, 128, 1000, true);
             }
             if(key[KEY_LEFT]){
                 aceleracion(90, vx, vy); //rota a la derecha
                 pintar_motor(90, cx, cy, buffer);
                 is_burning = true;
-                if(voice_check(voice) == 0)
+                if(voice_check(voice) == 0 || voice_check(voice) == NULL)
                     voice = play_sample(rocket, rocket_vol, 128, 1000, true);
             }
 
-            if(voice_check(voice) != 0)
-                stop_sample(rocket);
+            if(!key[KEY_UP] && !key[KEY_LEFT] && !key[KEY_RIGHT]){
+                if(voice_check(voice) != NULL)
+                    stop_sample(rocket);
+            }
         }
 
         pintar_medidor_combustible(is_burning, fuel, buffer);
@@ -90,6 +95,9 @@ int main(int argc, char *argv[])
 
         //Verifico si aterrizó.
         if(aterrizar(cx, cy, vx, vy, buffer, num_nivel)){
+            if(voice_check(voice) != NULL)
+                stop_sample(rocket);
+
             if(num_nivel < cantidad_niveles)
                 num_nivel++;
 
