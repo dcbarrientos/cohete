@@ -2,6 +2,7 @@
 #include "math.h"
 #include "main.h"
 #include <iostream>
+
 void pintar_nave(float cx, float cy, BITMAP *buffer){
     const float nave[22] = {-4, 4, -4, 2, -2, 0, -2, -2, 0, -3, 2, -2, 2, 0, 4, 2, 4, 4, -2, 0, 2, 0};
 
@@ -29,8 +30,15 @@ void pintar_motor(float da, float cx, float cy, BITMAP *buffer){
     }
 }
 
-void pintar_medidor_combustible(bool is_burning, float &fuel, BITMAP *buffer){
+void pintar_medidor_combustible(bool is_burning, float &fuel, int num_level, BITMAP *buffer){
+    std::string temp = "Level: " + std::to_string(num_level + 1);
+
+    char txtLevel[temp.size()+1];
+    strcpy(txtLevel, temp.c_str());
+
     textout_centre_ex(buffer, font, "Combustible " , 100, 30, 0x999999, 0x000000);
+    textout_centre_ex(buffer, font, txtLevel , 600, 30, 0x999999, 0x000000);
+
     float medidor_size = 100;
     float danger_zone = 15;
 
@@ -45,7 +53,7 @@ void pintar_medidor_combustible(bool is_burning, float &fuel, BITMAP *buffer){
 
 void pintar_nivel(int num_nivel, BITMAP *buffer){
     float *base_aterrizaje = get_base_aterrizaje();
-    std::vector<std::vector<float>> nivel = get_nivel();
+    std::vector<std::vector<float>> nivel = get_nivel(num_nivel);
 
     if(nivel.size() > 0){
         for(int unsigned i = 0; i < nivel.size(); i++){
@@ -62,7 +70,7 @@ void explotar(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosi
     //Desplazamiento de los elementos de la explosion
     float dx[6] = {7, 7, 0, -7, -7, 0};
     float dy[6] = {0, -7, -7, -7, 0, 7};
-    int v = play_sample(explosion, 255, 128, 1000, false);
+    play_sample(explosion, 255, 128, 1000, false);
 
     clear(screen);
     do{

@@ -7,7 +7,7 @@
 using namespace std;
 
 float base_aterrizaje[4];
-vector<vector<float>> nivel;
+vector<vector<vector<float>>> niveles;
 bool aterrizo = false;
 float fuel;
 float cx, cy;
@@ -15,8 +15,9 @@ float vx, vy;
 
 int main(int argc, char *argv[])
 {
-    float num_nivel = 1;
-    float cantidad_niveles = 3;
+    float num_nivel = 0;
+    //float cantidad_niveles = 3;
+    load_levels();
 
     //Esto debería volar más adelante
     if(argc > 1){
@@ -48,7 +49,7 @@ int main(int argc, char *argv[])
     }
 
     int voice = 0;
-    load_level(num_nivel);
+    set_level(num_nivel);
     while(!key[KEY_ESC]){
         is_burning = false;
         clear_to_color(buffer, 0x000000);
@@ -88,7 +89,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        pintar_medidor_combustible(is_burning, fuel, buffer);
+        pintar_medidor_combustible(is_burning, fuel, num_nivel, buffer);
 
         pintar_nave(cx, cy, buffer);
         blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
@@ -97,21 +98,21 @@ int main(int argc, char *argv[])
         if(aterrizar(cx, cy, vx, vy, buffer, num_nivel)){
             if(voice_check(voice) != NULL)
                 stop_sample(rocket);
-
-            if(num_nivel < cantidad_niveles)
+cout << num_nivel << "/" << niveles.size() << endl;
+            if(num_nivel < niveles.size())
                 num_nivel++;
 
             while(!key[KEY_SPACE]){
                 textout_centre_ex(screen, font, "Press (SPACE) for the next level.", 370, 250, 0xFBFF00, 0x000000);
                 rest(20);
             }
-            load_level(num_nivel);
+            set_level(num_nivel);
         }
 
         //Verifico si perdió o salió del juego
         if(is_game_over(cx, cy, buffer, num_nivel, explosion)){
             explotar(cx, cy, buffer, num_nivel, explosion);
-            load_level(num_nivel);
+            set_level(num_nivel);
         }
         rest(20);
     }
@@ -140,7 +141,7 @@ bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *exp
     }
 
     //Verifico si choco con un triangulo
-    if(colision_nave(cx, cy)){
+    if(colision_nave(cx, cy, num_nivel)){
         explotar(cx, cy, buffer, num_nivel, explosion);
         return true;
     }
@@ -180,52 +181,70 @@ bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_n
     return false;
 }
 
-void load_level(int num_level){
-    nivel.clear();
+void set_level(int num_level){
+    //nivel.clear();
     cx = 680;
     cy = 50;
     vx = 0;
     vy = -2;
     fuel = FUEL_MAX;
 
-    if(num_level == 1){
+    if(num_level == 0){
         base_aterrizaje[0] = 10;    //x1
         base_aterrizaje[1] = 450;   //y1
         base_aterrizaje[2] = 100;   //x2
         base_aterrizaje[3] = 500;   //y2
 
     }
+    if(num_level == 1){
+        base_aterrizaje[0] = 10;
+        base_aterrizaje[1] = 450;
+        base_aterrizaje[2] = 100;
+        base_aterrizaje[3] = 500;
+/*
+        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0, TRIANGULO_ARRIBA});*/
+    }
     if(num_level == 2){
         base_aterrizaje[0] = 10;
         base_aterrizaje[1] = 450;
         base_aterrizaje[2] = 100;
         base_aterrizaje[3] = 500;
-
-        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0, TRIANGULO_ARRIBA});
-    }
-    if(num_level == 3){
-        base_aterrizaje[0] = 10;
-        base_aterrizaje[1] = 450;
-        base_aterrizaje[2] = 100;
-        base_aterrizaje[3] = 500;
-
+/*
         nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200, TRIANGULO_ABAJO});
         nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400, TRIANGULO_ARRIBA});
         nivel.insert(nivel.end(), {620, 500, 700, 500, 620, 230, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
+        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});*/
     }
 
+}
+
+void load_levels(){
+    vector<vector<float>> nivel;
+    niveles.insert(niveles.end(), nivel);
+
+    nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
+    nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500, TRIANGULO_ABAJO});
+    nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500, TRIANGULO_ABAJO});
+    nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0, TRIANGULO_ARRIBA});
+    niveles.insert(niveles.end(), nivel);
+
+    nivel.clear();
+    nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200, TRIANGULO_ABAJO});
+    nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400, TRIANGULO_ARRIBA});
+    nivel.insert(nivel.end(), {620, 500, 700, 500, 620, 230, TRIANGULO_ABAJO});
+    nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
+    niveles.insert(niveles.end(), nivel);
 }
 
 float* get_base_aterrizaje(){
     return base_aterrizaje;
 }
 
-vector<vector<float>> get_nivel(){
-    return nivel;
+vector<vector<float>> get_nivel(float num_nivel){
+    return niveles[num_nivel];
 }
 
 float get_screen_width(){
@@ -290,7 +309,7 @@ bool colision_triangulo(float x1, float y1, float x2, float y2, float p1x, float
     return false;
 }
 
-bool colision_nave(float cx, float cy){
+bool colision_nave(float cx, float cy, float num_nivel){
     //Hitbox de la pata izquierda
     float r1x = cx - 20, r1y = cy, r2x = cx - 10, r2y = cy + 20;
     //Hitbox de la pata derecha
@@ -300,17 +319,17 @@ bool colision_nave(float cx, float cy){
 
     //Coordenadas de la hipotenusa de los triangulos
     float x1, y1, x2, y2;
-    for(int unsigned i = 0; i < nivel.size(); i++){
-        get_puntos_hipotenusa(nivel[i], x1, y1, x2, y2);
+    for(int unsigned i = 0; i < get_nivel(num_nivel).size(); i++){
+        get_puntos_hipotenusa(get_nivel(num_nivel)[i], x1, y1, x2, y2);
 
         if(DEBUG)
             cout << "(" << x1 << ", " << y1 << ")(" << x2 << ", " << y2 << ")" << endl;
 
-        if(colision_triangulo(x1, y1, x2, y2, r1x, r1y, r2x, r2y, nivel[i][6]))
+        if(colision_triangulo(x1, y1, x2, y2, r1x, r1y, r2x, r2y, get_nivel(num_nivel)[i][6]))
             return true;
-        if(colision_triangulo(x1, y1, x2, y2, p1x, p1y, p2x, p2y, nivel[i][6]))
+        if(colision_triangulo(x1, y1, x2, y2, p1x, p1y, p2x, p2y, get_nivel(num_nivel)[i][6]))
             return true;
-        if(colision_triangulo(x1, y1, x2, y2, q1x, q1y, q2x, q2y, nivel[i][6]))
+        if(colision_triangulo(x1, y1, x2, y2, q1x, q1y, q2x, q2y, get_nivel(num_nivel)[i][6]))
             return true;
     }
     return false;
