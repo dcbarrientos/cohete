@@ -6,28 +6,19 @@
 
 using namespace std;
 
-float base_aterrizaje[4];
+vector<vector<float>> bases;
 vector<vector<vector<float>>> niveles;
-bool aterrizo = false;
+vector<vector<float>> configuracion_nave;
+
+int state;
 float fuel;
 float cx, cy;
 float vx, vy;
+bool exploto = false;
+
 
 int main(int argc, char *argv[])
 {
-    float num_nivel = 0;
-    //float cantidad_niveles = 3;
-    load_levels();
-
-    //Esto debería volar más adelante
-    if(argc > 1){
-        num_nivel = atof(argv[1]);
-        if(num_nivel > 3){
-            cout << "No lo hice!" << endl;
-            return -1;
-        }
-    }
-
     //Inicializo modo gráfico
     allegro_init();
     install_keyboard();
@@ -41,79 +32,103 @@ int main(int argc, char *argv[])
     SAMPLE *rocket = load_sample("sounds\\rocket.wav");
     SAMPLE *explosion = load_sample("sounds\\explosion.wav");
 
-    bool is_burning;
+    load_levels();
+
+    float xe[12] = {cx - 10, cx + 10, cx, cx, cx + 15, cx - 15, cx + 5, cx - 10, cx + 10, cx - 5, cx - 10, cx + 10};
+    float ye[12] = {cy, cy, cy - 15, cy + 15, cy - 15, cy + 15, cy + 5, cy - 10, cy - 10, cy + 10, cy, cy};
 
     while(!key[KEY_SPACE]){
         textout_centre_ex(screen, font, "Press (SPACE) for the next level.", 370, 250, 0xFBFF00, 0x000000);
         rest(20);
     }
 
+    float num_nivel = 0;
     int voice = 0;
     set_level(num_nivel);
+    state = GAMING_STATE;
+
     while(!key[KEY_ESC]){
-        is_burning = false;
         clear_to_color(buffer, 0x000000);
 
         pintar_nivel(num_nivel, buffer);
-        mover_nave(cx, cy, vx, vy);
+        //Verifico si aterrizó.
+        if(state == GAMING_STATE && aterrizar(cx, cy, vx, vy, buffer, num_nivel))
+            state = LANDED_STATE;
+        //Verifico si perdio
+        if(is_game_over(cx, cy, buffer, num_nivel, explosion))
+            state = OVER_STATE;
 
-        if(fuel > 0){
-            if(key[KEY_UP]){
-                aceleracion(0, vx, vy); //angulo 0 es aceleracion ghacia arriba
-                pintar_motor(0, cx, cy, buffer);
-                is_burning = true;
+        if(state == GAMING_STATE){
+            mover_nave(cx, cy, vx, vy);
 
-                if(voice == 0 || voice_check(voice) == NULL){
-                    voice = play_sample(rocket, rocket_vol, 128, 1000, false);
+            if(fuel > 0){
+                if(key[KEY_UP]){
+                    aceleracion(0, vx, vy); //angulo 0 es aceleracion ghacia arriba
+                    pintar_motor(0, cx, cy, buffer);
+                    fuel -= FUEL_DECREASE;
+                    if(voice == 0 || voice_check(voice) == NULL){
+                        voice = play_sample(rocket, rocket_vol, 128, 1000, false);
+                    }
+
+                }
+                if(key[KEY_RIGHT]){
+                    aceleracion(-90, vx, vy); //rota a la derecha
+                    pintar_motor(-90, cx, cy, buffer);
+                    fuel -= FUEL_DECREASE;
+                    if(voice_check(voice) == 0 || voice_check(voice) == NULL)
+                        voice = play_sample(rocket, rocket_vol, 128, 1000, true);
+                }
+                if(key[KEY_LEFT]){
+                    aceleracion(90, vx, vy); //rota a la derecha
+                    pintar_motor(90, cx, cy, buffer);
+                    fuel -= FUEL_DECREASE;
+                    if(voice_check(voice) == 0 || voice_check(voice) == NULL)
+                        voice = play_sample(rocket, rocket_vol, 128, 1000, true);
                 }
 
-            }
-            if(key[KEY_RIGHT]){
-                aceleracion(-90, vx, vy); //rota a la derecha
-                pintar_motor(-90, cx, cy, buffer);
-                is_burning = true;
-                if(voice_check(voice) == 0 || voice_check(voice) == NULL)
-                    voice = play_sample(rocket, rocket_vol, 128, 1000, true);
-            }
-            if(key[KEY_LEFT]){
-                aceleracion(90, vx, vy); //rota a la derecha
-                pintar_motor(90, cx, cy, buffer);
-                is_burning = true;
-                if(voice_check(voice) == 0 || voice_check(voice) == NULL)
-                    voice = play_sample(rocket, rocket_vol, 128, 1000, true);
-            }
-
-            if(!key[KEY_UP] && !key[KEY_LEFT] && !key[KEY_RIGHT]){
-                if(voice_check(voice) != NULL)
-                    stop_sample(rocket);
+                if(!key[KEY_UP] && !key[KEY_LEFT] && !key[KEY_RIGHT]){
+                    if(voice_check(voice) != NULL)
+                        stop_sample(rocket);
+                }
+            }else if(fuel <= 0){
+                stop_sample(rocket);
             }
         }
 
-        pintar_medidor_combustible(is_burning, fuel, num_nivel, buffer);
-
-        pintar_nave(cx, cy, buffer);
-        blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
-
-        //Verifico si aterrizó.
-        if(aterrizar(cx, cy, vx, vy, buffer, num_nivel)){
+        if(state == LANDED_STATE){
             if(voice_check(voice) != NULL)
                 stop_sample(rocket);
-cout << num_nivel << "/" << niveles.size() << endl;
-            if(num_nivel < niveles.size())
-                num_nivel++;
 
-            while(!key[KEY_SPACE]){
-                textout_centre_ex(screen, font, "Press (SPACE) for the next level.", 370, 250, 0xFBFF00, 0x000000);
-                rest(20);
+            textout_centre_ex(buffer, font, "Press (SPACE) for the next level.", 370, 250, 0xFBFF00, 0x000000);
+
+            if(key[KEY_SPACE]){
+                if(num_nivel < niveles.size() - 1)
+                    num_nivel++;
+                set_level(num_nivel);
             }
-            set_level(num_nivel);
         }
 
-        //Verifico si perdió o salió del juego
-        if(is_game_over(cx, cy, buffer, num_nivel, explosion)){
-            explotar(cx, cy, buffer, num_nivel, explosion);
-            set_level(num_nivel);
+        if(state == OVER_STATE){
+            stop_sample(rocket);
+            if((voice == 0 || voice_check(voice) == NULL) && !exploto){
+                voice = play_sample(explosion, 255, 128, 1000, false);
+                exploto = true;
+            }
+
+            explotar(cx, cy, xe, ye, buffer);
+
+            if(key[KEY_SPACE]){
+                set_level(num_nivel);
+                stop_sample(explosion);
+            }
         }
+        pintar_medidor_combustible(fuel, configuracion_nave[num_nivel][FUEL_INDEX], num_nivel, buffer);
+
+        if(state != OVER_STATE)
+            pintar_nave(cx, cy, buffer);
+
+        blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
+
         rest(20);
     }
 
@@ -136,30 +151,25 @@ bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *exp
 
     //Verifico si salió de la pantalla.
     if(cx - 20 >= get_screen_width() || cx + 20 <= 0 || cy + 20 <= 0 || cy - 20 >= get_screen_height()){
-        explotar(cx, cy, buffer, num_nivel, explosion);
         return true;
     }
 
     //Verifico si choco con un triangulo
     if(colision_nave(cx, cy, num_nivel)){
-        explotar(cx, cy, buffer, num_nivel, explosion);
         return true;
     }
 
     //Verifico si choco con la base
-    if(cy + 20 >= base_aterrizaje[1]){
-        if(cx - 20 >= base_aterrizaje[0] && cx + 20 <= base_aterrizaje[2]){
+    if(cy + 20 >= bases[num_nivel][1]){
+        if(cx - 20 >= bases[num_nivel][0] && cx + 20 <= bases[num_nivel][2]){
             if(vy >1.5){
-                explotar(cx, cy, buffer, num_nivel, explosion);
                 return true;
             }
         }else{
             //Prueba la pata izquierda.
-            if(cx - 20 >= base_aterrizaje[0] && cx - 20 < base_aterrizaje[2]){
-                explotar(cx, cy, buffer, num_nivel, explosion);
+            if(cx - 20 >= bases[num_nivel][0] && cx - 20 < bases[num_nivel][2]){
                 return true;
-            }else if(cx + 20 < base_aterrizaje[2] && cx + 20 >= base_aterrizaje[0]){    //Pruebo la para derecha
-                explotar(cx, cy, buffer, num_nivel, explosion);
+            }else if(cx + 20 < bases[num_nivel][2] && cx + 20 >= bases[num_nivel][0]){    //Pruebo la para derecha
                 return true;
             }
         }
@@ -169,10 +179,10 @@ bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *exp
 }
 
 bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_nivel){
-    if(cy + 20 >= base_aterrizaje[1]){
-        if(cx - 20 >= base_aterrizaje[0] && cx + 20 <= base_aterrizaje[2]){
+    if(cy + 20 >= bases[num_nivel][1]){
+        if(cx - 20 >= bases[num_nivel][0] && cx + 20 <= bases[num_nivel][2]){
             if(vy <= 1.5){
-                aterrizo = true;
+                //aterrizo = true;
                 return true;
             }
         }
@@ -182,55 +192,47 @@ bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_n
 }
 
 void set_level(int num_level){
-    //nivel.clear();
-    cx = 680;
-    cy = 50;
-    vx = 0;
-    vy = -2;
-    fuel = FUEL_MAX;
-
-    if(num_level == 0){
-        base_aterrizaje[0] = 10;    //x1
-        base_aterrizaje[1] = 450;   //y1
-        base_aterrizaje[2] = 100;   //x2
-        base_aterrizaje[3] = 500;   //y2
-
-    }
-    if(num_level == 1){
-        base_aterrizaje[0] = 10;
-        base_aterrizaje[1] = 450;
-        base_aterrizaje[2] = 100;
-        base_aterrizaje[3] = 500;
-/*
-        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0, TRIANGULO_ARRIBA});*/
-    }
-    if(num_level == 2){
-        base_aterrizaje[0] = 10;
-        base_aterrizaje[1] = 450;
-        base_aterrizaje[2] = 100;
-        base_aterrizaje[3] = 500;
-/*
-        nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400, TRIANGULO_ARRIBA});
-        nivel.insert(nivel.end(), {620, 500, 700, 500, 620, 230, TRIANGULO_ABAJO});
-        nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});*/
-    }
-
+    cx = configuracion_nave[num_level][CX_INDEX];
+    cy = configuracion_nave[num_level][CY_INDEX];
+    vx = configuracion_nave[num_level][VX_INDEX];
+    vy = configuracion_nave[num_level][VY_INDEX];
+    fuel = configuracion_nave[num_level][FUEL_INDEX];
+    state = GAMING_STATE;
+    exploto = false;
 }
 
 void load_levels(){
     vector<vector<float>> nivel;
+
+    // Nivel 1
+    ///////////////////////////////////////////////////////////////////////////////////
+    //Configuración inicial nave
+    configuracion_nave.insert(configuracion_nave.end(), {680, 50, 0, -2, 100});
+    //Base de aterrizaje para el nivel 1
+    bases.insert(bases.end(), {10, 450, 100, 500});
+    //Obstaculos para el nivel 1. En este nivel está en cero porque no tiene obstaculos
     niveles.insert(niveles.end(), nivel);
 
+    // Nivel 2
+    ///////////////////////////////////////////////////////////////////////////////////
+    //Configuración inicial nave
+    configuracion_nave.insert(configuracion_nave.end(), {680, 50, 0, -2, 75});
+    //Base de aterrizaje para el nivel 1
+    bases.insert(bases.end(), {10, 450, 100, 500});
+    //Obstaculos para el nivel 1
     nivel.insert(nivel.end(), {110, 100, 300, 500, 110, 500, TRIANGULO_ABAJO});
     nivel.insert(nivel.end(), {500, 500, 600, 300, 600, 500, TRIANGULO_ABAJO});
     nivel.insert(nivel.end(), {600, 300, 800, 500, 600, 500, TRIANGULO_ABAJO});
     nivel.insert(nivel.end(), {200, 0, 400, 350, 400, 0, TRIANGULO_ARRIBA});
     niveles.insert(niveles.end(), nivel);
 
+    // Nivel 3
+    ///////////////////////////////////////////////////////////////////////////////////
+    //Configuración inicial nave
+    configuracion_nave.insert(configuracion_nave.end(), {680, 50, 0, -2, 100});
+    //Base de aterrizaje para el nivel 1
+    bases.insert(bases.end(), {10, 450, 100, 500});
+    //Obstaculos para el nivel 1
     nivel.clear();
     nivel.insert(nivel.end(), {400, 500, 300, 500, 300, 200, TRIANGULO_ABAJO});
     nivel.insert(nivel.end(), {300, 0, 500, 0, 500, 400, TRIANGULO_ARRIBA});
@@ -239,8 +241,8 @@ void load_levels(){
     niveles.insert(niveles.end(), nivel);
 }
 
-float* get_base_aterrizaje(){
-    return base_aterrizaje;
+vector<float> get_base_aterrizaje(float num_nivel){
+    return bases[num_nivel];
 }
 
 vector<vector<float>> get_nivel(float num_nivel){
@@ -321,9 +323,6 @@ bool colision_nave(float cx, float cy, float num_nivel){
     float x1, y1, x2, y2;
     for(int unsigned i = 0; i < get_nivel(num_nivel).size(); i++){
         get_puntos_hipotenusa(get_nivel(num_nivel)[i], x1, y1, x2, y2);
-
-        if(DEBUG)
-            cout << "(" << x1 << ", " << y1 << ")(" << x2 << ", " << y2 << ")" << endl;
 
         if(colision_triangulo(x1, y1, x2, y2, r1x, r1y, r2x, r2y, get_nivel(num_nivel)[i][6]))
             return true;

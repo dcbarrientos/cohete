@@ -30,7 +30,7 @@ void pintar_motor(float da, float cx, float cy, BITMAP *buffer){
     }
 }
 
-void pintar_medidor_combustible(bool is_burning, float &fuel, int num_level, BITMAP *buffer){
+void pintar_medidor_combustible(float &fuel, float max_fuel, int num_level, BITMAP *buffer){
     std::string temp = "Level: " + std::to_string(num_level + 1);
 
     char txtLevel[temp.size()+1];
@@ -43,16 +43,21 @@ void pintar_medidor_combustible(bool is_burning, float &fuel, int num_level, BIT
     float danger_zone = 15;
 
     if(fuel > 0){
-        if(fuel > (FUEL_MAX / danger_zone))
-            rectfill(buffer, 50, 50, 50 + (fuel * medidor_size / FUEL_MAX), 55, NORMAL_FUEL_COLOR);
+        int color;
+        if(fuel > (max_fuel / danger_zone))
+            color = NORMAL_FUEL_COLOR;
         else
-            rectfill(buffer, 50, 50, 50 + (fuel * medidor_size / FUEL_MAX), 55, DANGER_FUEL_COLOR);
+            color = DANGER_FUEL_COLOR;
+
+        float x = 50 + (fuel * medidor_size / max_fuel);
+        float m = 3;
+        rect(buffer, 50 - m, 50 - m, medidor_size + 50 + m, 55 + m, NORMAL_FUEL_COLOR);
+        rectfill(buffer, 50, 50, x, 55, color);
     }
-    if(is_burning) fuel -= .2;
 }
 
 void pintar_nivel(int num_nivel, BITMAP *buffer){
-    float *base_aterrizaje = get_base_aterrizaje();
+    std::vector<float> base_aterrizaje = get_base_aterrizaje(num_nivel);
     std::vector<std::vector<float>> nivel = get_nivel(num_nivel);
 
     if(nivel.size() > 0){
@@ -63,6 +68,25 @@ void pintar_nivel(int num_nivel, BITMAP *buffer){
     rectfill(buffer, base_aterrizaje[0], base_aterrizaje[1], base_aterrizaje[2], base_aterrizaje[3], 0x999999);
 }
 
+void explotar(float cx, float cy, float x[], float y[], BITMAP *buffer){
+    //Desplazamiento de los elementos de la explosion
+    float dx[6] = {7, 7, 0, -7, -7, 0};
+    float dy[6] = {0, -7, -7, -7, 0, 7};
+    for(int i = 0; i <= 10; i+=2){
+        line(buffer, x[i], y[i], x[i+1], y[i + 1], 0xffffff);
+        rotar(x[i + 1], y[i + 1], x[i], y[i], 5);
+
+        x[i] += dx[i / 2];
+        y[i] += dy[i / 2];
+        x[i + 1] += dx[i / 2];
+        y[i + 1] += dy[i / 2];
+    }
+
+    textout_centre_ex(buffer, font, "Press (Space) to try again.", 370, 240, 0xfbff00, 0x000000);
+    textout_centre_ex(buffer, font, "Press (ESC) to exit.", 370, 250, 0xfbff00, 0x000000);
+
+}
+/*
 void explotar(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosion){
     float x[12] = {cx - 10, cx + 10, cx, cx, cx + 15, cx - 15, cx + 5, cx - 10, cx + 10, cx - 5, cx - 10, cx + 10};
     float y[12] = {cy, cy, cy - 15, cy + 15, cy - 15, cy + 15, cy + 5, cy - 10, cy - 10, cy + 10, cy, cy};
@@ -95,7 +119,7 @@ void explotar(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosi
 
     stop_sample(explosion);
 }
-
+*/
 void linea(float x1, float y1, float x2, float y2, BITMAP *buffer){
     line(buffer, x1, y1, x2, y2, 0xff0000);
 }
