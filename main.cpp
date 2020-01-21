@@ -215,8 +215,6 @@ void set_level(int num_level){
     fuel = configuracion_nave[num_level][FUEL_INDEX];
     state = GAMING_STATE;
     exploto = false;
-
-
 }
 
 void load_levels(){
