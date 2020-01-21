@@ -86,40 +86,7 @@ void explotar(float cx, float cy, float x[], float y[], BITMAP *buffer){
     textout_centre_ex(buffer, font, "Press (ESC) to exit.", 370, 250, 0xfbff00, 0x000000);
 
 }
-/*
-void explotar(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosion){
-    float x[12] = {cx - 10, cx + 10, cx, cx, cx + 15, cx - 15, cx + 5, cx - 10, cx + 10, cx - 5, cx - 10, cx + 10};
-    float y[12] = {cy, cy, cy - 15, cy + 15, cy - 15, cy + 15, cy + 5, cy - 10, cy - 10, cy + 10, cy, cy};
 
-    //Desplazamiento de los elementos de la explosion
-    float dx[6] = {7, 7, 0, -7, -7, 0};
-    float dy[6] = {0, -7, -7, -7, 0, 7};
-    play_sample(explosion, 255, 128, 1000, false);
-
-    clear(screen);
-    do{
-        clear(buffer);
-        pintar_nivel(num_nivel, buffer);
-        for(int i = 0; i <= 10; i+=2){
-            line(buffer, x[i], y[i], x[i+1], y[i + 1], 0xffffff);
-            rotar(x[i + 1], y[i + 1], x[i], y[i], 5);
-
-            x[i] += dx[i / 2];
-            y[i] += dy[i / 2];
-            x[i + 1] += dx[i / 2];
-            y[i + 1] += dy[i / 2];
-        }
-
-        textout_centre_ex(buffer, font, "Press (Space) to try again.", 370, 240, 0xfbff00, 0x000000);
-        textout_centre_ex(buffer, font, "Press (ESC) to exit.", 370, 250, 0xfbff00, 0x000000);
-
-        blit(buffer, screen, 0, 0, 0, 0, get_screen_width(), get_screen_height());
-        rest(20);
-    }while(!key[KEY_ESC] && !key[KEY_SPACE]);
-
-    stop_sample(explosion);
-}
-*/
 void linea(float x1, float y1, float x2, float y2, BITMAP *buffer){
     line(buffer, x1, y1, x2, y2, 0xff0000);
 }

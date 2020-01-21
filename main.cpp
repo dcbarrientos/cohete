@@ -15,10 +15,12 @@ float fuel;
 float cx, cy;
 float vx, vy;
 bool exploto = false;
-
+float xe[12];
+float ye[12];
 
 int main(int argc, char *argv[])
 {
+
     //Inicializo modo gráfico
     allegro_init();
     install_keyboard();
@@ -34,8 +36,6 @@ int main(int argc, char *argv[])
 
     load_levels();
 
-    float xe[12] = {cx - 10, cx + 10, cx, cx, cx + 15, cx - 15, cx + 5, cx - 10, cx + 10, cx - 5, cx - 10, cx + 10};
-    float ye[12] = {cy, cy, cy - 15, cy + 15, cy - 15, cy + 15, cy + 5, cy - 10, cy - 10, cy + 10, cy, cy};
 
     while(!key[KEY_SPACE]){
         textout_centre_ex(screen, font, "Press (SPACE) for the next level.", 370, 250, 0xFBFF00, 0x000000);
@@ -49,14 +49,9 @@ int main(int argc, char *argv[])
 
     while(!key[KEY_ESC]){
         clear_to_color(buffer, 0x000000);
-
         pintar_nivel(num_nivel, buffer);
-        //Verifico si aterrizó.
-        if(state == GAMING_STATE && aterrizar(cx, cy, vx, vy, buffer, num_nivel))
-            state = LANDED_STATE;
-        //Verifico si perdio
-        if(is_game_over(cx, cy, buffer, num_nivel, explosion))
-            state = OVER_STATE;
+
+        state = get_state(cx,cy, vx, vy, num_nivel);
 
         if(state == GAMING_STATE){
             mover_nave(cx, cy, vx, vy);
@@ -111,6 +106,11 @@ int main(int argc, char *argv[])
         if(state == OVER_STATE){
             stop_sample(rocket);
             if((voice == 0 || voice_check(voice) == NULL) && !exploto){
+                float x[12] = {cx - 10, cx + 10, cx, cx, cx + 15, cx - 15, cx + 5, cx - 10, cx + 10, cx - 5, cx - 10, cx + 10};
+                float y[12] = {cy, cy, cy - 15, cy + 15, cy - 15, cy + 15, cy + 5, cy - 10, cy - 10, cy + 10, cy, cy};
+                copy(begin(x), end(x), begin(xe));
+                copy(begin(y), end(y), begin(ye));
+
                 voice = play_sample(explosion, 255, 128, 1000, false);
                 exploto = true;
             }
@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
                 stop_sample(explosion);
             }
         }
+
         pintar_medidor_combustible(fuel, configuracion_nave[num_nivel][FUEL_INDEX], num_nivel, buffer);
 
         if(state != OVER_STATE)
@@ -132,9 +133,24 @@ int main(int argc, char *argv[])
         rest(20);
     }
 
+    destroy_sample(rocket);
+    destroy_sample(explosion);
+
     return 0;
 }
 END_OF_MAIN()
+
+int get_state(float cx, float cy, float vx, float vy, float num_nivel){
+    //Verifico si aterrizó.
+    if(state == GAMING_STATE && is_landed(cx, cy, vx, vy, num_nivel))
+        return LANDED_STATE;
+
+    //Verifico si perdio
+    if(is_game_over(cx, cy,  num_nivel))
+        return OVER_STATE;
+
+    return state;
+}
 
 void mover_nave(float &cx, float &cy, float &vx, float &vy){
     if(vx <= X_MAX_SPEED)
@@ -146,7 +162,7 @@ void mover_nave(float &cx, float &cy, float &vx, float &vy){
     cy += vy;
 }
 
-bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosion){
+bool is_game_over(float cx, float cy,  int num_nivel){//, SAMPLE *explosion){
     //El tamaño de la nave es de 40 de ancho por 20 de alto.
 
     //Verifico si salió de la pantalla.
@@ -178,7 +194,7 @@ bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *exp
     return false;
 }
 
-bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_nivel){
+bool is_landed(float cx, float cy, float vx, float vy, int num_nivel){
     if(cy + 20 >= bases[num_nivel][1]){
         if(cx - 20 >= bases[num_nivel][0] && cx + 20 <= bases[num_nivel][2]){
             if(vy <= 1.5){
@@ -199,6 +215,8 @@ void set_level(int num_level){
     fuel = configuracion_nave[num_level][FUEL_INDEX];
     state = GAMING_STATE;
     exploto = false;
+
+
 }
 
 void load_levels(){

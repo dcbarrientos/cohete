@@ -29,8 +29,9 @@
 void set_level(int num_level);
 void load_levels();
 void mover_nave(float &cx, float &cy, float &vx, float &vy);
-bool is_game_over(float cx, float cy, BITMAP *buffer, int num_nivel, SAMPLE *explosion);
-bool aterrizar(float cx, float cy, float vx, float vy, BITMAP *buffer, int num_nivel);
+int get_state(float cx, float cy, float vx, float vy, float num_nivel);
+bool is_game_over(float cx, float cy,  int num_nivel);
+bool is_landed(float cx, float cy, float vx, float vy, int num_nivel);
 bool colision_triangulo(float x1, float y1, float x2, float y2, float p1x, float p1y, float p2x, float p2y);
 bool colision_nave(float cx, float cy, float num_nivel);
 
