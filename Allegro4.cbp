@@ -38,6 +38,8 @@
 			<Add directory="C:/Dev/CodeBlocks/Libs/allegro-4.2.3/include" />
 		</Compiler>
 		<Linker>
+			<Add option="-static-libstdc++" />
+			<Add option="-static-libgcc" />
 			<Add library="C:/Dev/CodeBlocks/Libs/allegro-4.2.3/lib/libaldat.a" />
 			<Add library="C:/Dev/CodeBlocks/Libs/allegro-4.2.3/lib/liballd.a" />
 			<Add library="C:/Dev/CodeBlocks/Libs/allegro-4.2.3/lib/liballd_s.a" />

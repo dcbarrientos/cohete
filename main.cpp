@@ -223,7 +223,7 @@ void load_levels(){
     // Nivel 1
     ///////////////////////////////////////////////////////////////////////////////////
     //Configuración inicial nave
-    configuracion_nave.insert(configuracion_nave.end(), {680, 50, 0, -2, 100});
+    configuracion_nave.insert(configuracion_nave.end(), {680, 50, 0, -2, 50});
     //Base de aterrizaje para el nivel 1
     bases.insert(bases.end(), {10, 450, 100, 500});
     //Obstaculos para el nivel 1. En este nivel está en cero porque no tiene obstaculos
